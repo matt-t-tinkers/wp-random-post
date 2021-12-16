@@ -40,25 +40,47 @@ if ( ! class_exists( 'RandomPostShortcode' ) ) {
                 'author'    => '',
 			), $atts);
 			$output  = '';
-			if ( ! empty( $options['post_type'] ) ) {
-				$post_query = new WP_Query( array(
-					'post_type'     => 'post',
-                    'orderby'       => 'rand',
-                    'posts_per_page' => 1,
-				) );
-				if ( $post_query->have_posts() ) {
-					while ( $post_query->have_posts() ) {
-						$post_query->the_post();
-						ob_start();
-                        echo ('<h1>I am awake</h1>');
-						printf( '<h2>%s</h2>', esc_html( the_title() ) );
-						$output .= ob_get_clean();
-					}
-				} else {
-					$output .= '<p>No post could be found.</p>';
-				}
-				wp_reset_postdata();
-			}
+            $post_query = new WP_Query(array(
+                'post_type'      => $options['post_type'],
+                'author'         => $options['author'],
+                // Pick out a random post.
+                'orderby'        => 'rand',
+                // Just one post please.
+                'posts_per_page' => 1,
+            ));
+            if ($post_query->have_posts()) {
+                while ($post_query->have_posts()) {
+                    $post_query->the_post();
+                    ob_start();
+                    ?>
+                    <article>	
+                        <?php
+                        if (has_post_thumbnail()) {
+                            $thumbnail_alt = get_post_meta( get_post_thumbnail_id(), '_wp_attachment_image_alt', true );
+                            if (empty($thumbnail_alt)) {
+                                $thumbnail_alt = get_the_title();
+                            }
+                            ?>
+                            <a href="<?php the_permalink(); ?>" title="<?php the_title_attribute(); ?>"><img src="<?php esc_attr(the_post_thumbnail_url()); ?>" alt="<?php echo esc_attr($thumbnail_alt); ?>"></a>
+                            <?php
+                        }
+                        ?>
+                        <header>
+                            <h2>
+                                <a href="<?php the_permalink(); ?>" title="<?php the_title_attribute(); ?>"><?php echo esc_html(the_title('', '', false)); ?></a>
+                            </h2>
+                        </header>
+                        <p><?php echo esc_html(the_excerpt()); ?></p>
+                        <?php the_date( 'd/m/Y', '<time>', '</time>' ); ?>
+                    </article>
+                    <?php
+                    $output .= ob_get_clean();
+                }
+            } else {
+                $output .= '<p>No post could be found.</p>';
+            }
+            // Reset the post query.
+            wp_reset_postdata();
 			return $output;
 		}
     }
