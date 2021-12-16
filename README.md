@@ -9,3 +9,7 @@ A shortcode that will pull through a random post and display:
 You can also add options to filter on:
 - A specific post type
 - A specific post author
+
+
+## Shortcode example
+[wp-random-post post_type=post author=2 /]
